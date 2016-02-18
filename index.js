@@ -20,6 +20,7 @@ const DASHBOARD_DEAMON = path.join(__dirname, './bin/deamon.js')
 const DASHBOARD_DNS = path.join(__dirname, './bin/dns.js')
 const DASHBOARD_NETWORK = path.join(__dirname, './bin/discover-network.js')
 const DASHBOARD_TUNNEL = path.join(__dirname, './bin/tunnel-c.js')
+const DASHBOARD_IAMALIVE = path.join(__dirname, './bin/')
 
 cmd
 .version('0.1.42')
@@ -55,7 +56,7 @@ deamon.title = 'netbeast-deamon'
 deamon.start()
 
 var network = new (forever.Monitor)(DASHBOARD_NETWORK, {
-  env: { 'NETBEAST_PORT': process.env.PORT },
+  env: { 'NETBEAST_PORT': process.env.PORT},
   max: 1
 })
 
@@ -63,12 +64,25 @@ network.title = 'netbeast-network'
 network.start()
 
 var tunnel = new (forever.Monitor)(DASHBOARD_TUNNEL, {
-  env: { 'NETBEAST_PORT': process.env.PORT },
+  env: { 'NETBEAST_PORT': process.env.PORT,
+  'RELAY_PORT': process.env.RELAY_PORT,
+  'SERVER_IP': process.env.SERVER_IP },
   max: 1
 })
 
 tunnel.title = 'netbeast-tunnel'
 tunnel.start()
+
+var iamalive = new (forever.Monitor)(DASHBOARD_IAMALIVE, {
+  env: { 'NETBEAST_PORT': process.env.PORT,
+  'IAMALIVE_SPORT': process.env.IAMALIVE_SPORT,
+  'IAMALIVE_CPORT': process.env.IAMALIVE_CPORT,
+  'SERVER_IP': process.env.SERVER_IP },
+  max: 1
+})
+
+iamalive.title = 'netbeast-tunnel'
+iamalive.start()
 
 process.on('exit', function () {
   deamon.kill('SIGTERM')
