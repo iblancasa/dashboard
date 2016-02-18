@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 var host = '127.0.0.1'
-var port = '8000'
-var relayPort = '8081'
-var relayHost = '52.29.229.180'
+
+var port = process.env.PORT
+var relayPort = process.env.RELAY_PORT
+var relayHost = process.env.SERVER_IP
 
 var net = require('net')
 
@@ -11,20 +12,10 @@ function connect () {
   // var relaySocket = new net.Socket().setKeepAlive(true, 10000)
   var relaySocket = new net.Socket()
   var serverSocket
-/*
-  var server = net.createServer();
-
-server.on('connection', function(conn) {
-  conn.id = Math.floor(Math.random() * 1000);
-  conn.on('data', function(data) {
-    conn.write('ID: '+conn.id);
-  });
-});
-server.listen(3000); */
 
   relaySocket.connect(relayPort, relayHost, function () {
     console.log('relay socket established')
-
+console.log(port)
     relaySocket.on('data', function (data) {
       if (serverSocket === undefined) {
         // serverSocket = new net.Socket().setKeepAlive(true, 10000)
