@@ -15,7 +15,6 @@ function connect () {
 
   relaySocket.connect(relayPort, relayHost, function () {
     console.log('relay socket established')
-console.log(port)
     relaySocket.on('data', function (data) {
       if (serverSocket === undefined) {
         // serverSocket = new net.Socket().setKeepAlive(true, 10000)
