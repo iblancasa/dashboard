@@ -7,7 +7,7 @@ var intervalID = setInterval(function () {
   require('getmac').getMac(function (err, macAddress) {
     if (err) throw err
     var msg = new Buffer(macAddress)
-    client.send(msg, 0, msg.length, 41234, process.env.SERVER_IP, function (err) {
+    client.send(msg, 0, msg.length, process.env.IAMALIVE_SPORT, process.env.SERVER_IP, function (err) {
       if (err) {
         throw err
       }
@@ -25,4 +25,4 @@ client.on('listening', function () {
   console.log('client listening' + address.address + ':' + address.port)
 })
 
-client.bind(41235)
+client.bind(process.env.IAMALIVE_CPORT)
