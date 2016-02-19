@@ -19,6 +19,7 @@
     "forever-monitor": "^1.7.0",
     "freeport": "^1.0.5",
     "fs-extra": "^0.26.0",
+    "getmac": "^1.0.7",
     "gift": "^0.6.1",
     "http-proxy": "^1.12.0",
     "inquirer": "^0.11.0",
