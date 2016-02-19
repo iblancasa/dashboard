@@ -1,6 +1,6 @@
 var dgram = require('dgram')
 var client = dgram.createSocket('udp4')
-//var tunnel = require('./tunnel-c.js')
+var tunnel = require('./tunnel-c.js')
 
 console.log('Server ' + process.env.SERVER_IP + ':' + process.env.IAMALIVE_SPORT)
 
@@ -19,7 +19,7 @@ var intervalID = setInterval(function () {
 
 client.on('message', function (msg, rinfo) {
   console.log('client got: ' + msg + ' from ' + rinfo.address + ':' + rinfo.port)
-  //tunnel(msg)
+  tunnel.start(msg)
 })
 
 client.on('listening', function () {
