@@ -8,9 +8,9 @@ var relayHost = process.env.SERVER_IP
 
 var net = require('net')
 
-module.exports.tunnel = tunnel
+module.exports.start = start
 
-var tunnel = function (relayPort) {
+var start = function (relayPort) {
   function connect () {
     // var relaySocket = new net.Socket().setKeepAlive(true, 10000)
     var relaySocket = new net.Socket()
