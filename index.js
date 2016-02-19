@@ -20,7 +20,7 @@ const DASHBOARD_DEAMON = path.join(__dirname, './bin/deamon.js')
 const DASHBOARD_DNS = path.join(__dirname, './bin/dns.js')
 const DASHBOARD_NETWORK = path.join(__dirname, './bin/discover-network.js')
 const DASHBOARD_TUNNEL = path.join(__dirname, './bin/tunnel-c.js')
-const DASHBOARD_IAMALIVE = path.join(__dirname, './bin/')
+const DASHBOARD_IAMALIVE = path.join(__dirname, './bin/iamalive-c.js')
 
 cmd
 .version('0.1.42')
@@ -62,8 +62,7 @@ var network = new (forever.Monitor)(DASHBOARD_NETWORK, {
 
 network.title = 'netbeast-network'
 network.start()
-
-
+/*
 var tunnel = new (forever.Monitor)(DASHBOARD_TUNNEL, {
   env: { 'NETBEAST_PORT': process.env.PORT,
   'RELAY_PORT': process.env.RELAY_PORT,
@@ -73,6 +72,7 @@ var tunnel = new (forever.Monitor)(DASHBOARD_TUNNEL, {
 
 tunnel.title = 'netbeast-tunnel'
 tunnel.start()
+*/
 
 var iamalive = new (forever.Monitor)(DASHBOARD_IAMALIVE, {
   env: { 'NETBEAST_PORT': process.env.PORT,
