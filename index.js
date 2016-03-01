@@ -1,55 +1,75 @@
 #!/usr/bin/env node
 
 require('./lib/init')
-
-// Node native libraries
 var path = require('path')
-var http = require('http')
+ var http = require('http')
++var https = require('https')
 
-// NPM dependencies
-var cmd = require('commander')
-var mosca = require('mosca')
-var spawn = require('child_process').spawn
+ // NPM dependencies
+ var forever = require('forever-monitor')
+ var cmd = require('commander')
+ var mosca = require('mosca')
++var fs = require('fs')
 
-process.chdir(__dirname)
-// Project libraries
-var app = require('./src')
-var bootOnload = require('./src/boot-on-load')
+ // Project libraries
+ var app = require('./src')
+@@ -19,9 +21,15 @@ const DASHBOARD_NETWORK = path.join(__dirname, './bin/network.js')
+ const DASHBOARD_DEAMON = path.join(__dirname, './bin/deamon.js')
+ const DASHBOARD_DNS = path.join(__dirname, './bin/dns.js')
 
-const DASHBOARD_NETWORK = path.join(__dirname, './bin/network.js')
-const DASHBOARD_DEAMON = path.join(__dirname, './bin/deamon.js')
-const DASHBOARD_DNS = path.join(__dirname, './bin/dns.js')
++const options = {
++  key: fs.readFileSync(__dirname + '/ssl/dashboard-key.pem'),
++  cert: fs.readFileSync(__dirname + '/ssl/dashboard-cert.pem')
++}
++
+ cmd
+ .version('0.1.42')
+ .option('-p, --port <n>', 'Port to start the HTTP server', parseInt)
++.option('-sp, --securePort <n>', 'Secure Port to start the HTTPS server', parseInt)
+ .parse(process.argv)
 
-cmd
-.version('0.1.42')
-.option('-p, --port <n>', 'Port to start the HTTP server', parseInt)
-.parse(process.argv)
+ // Launch server with web sockets
+@@ -29,6 +37,12 @@ var server = http.createServer(app)
+ var broker = new mosca.Server({})
+ broker.attachHttpServer(server)
 
-// Launch server with web sockets
-var server = http.createServer(app)
-var broker = new mosca.Server({})
-broker.attachHttpServer(server)
++// ----- WARNING: DONT KNOW IF attachHttpServer here is correct. Need to have a look on the internet about this
++var secureServer = https.createServer(options)
++broker.attachHttpServer(secureServer)
++// ----------------------------------------------------------------------------------------------------------
++
++process.env.SECURE_PORT = cmd.securePort || process.env.SECURE_PORT
+ process.env.PORT = cmd.port || process.env.PORT
 
-process.env.PORT = cmd.port || process.env.PORT
+ server.listen(process.env.PORT, function () {
+@@ -36,6 +50,11 @@ server.listen(process.env.PORT, function () {
+   bootOnload()
+ })
 
-server.listen(process.env.PORT, function () {
-  console.log('👾  Netbeast dashboard started on %s:%s', server.address().address, server.address().port)
-  bootOnload()
++secureServer.listen(process.env.SECURE_PORT, function () {
++  console.log('👾  Netbeast secure dashboard started on %s:%s', secureServer.address().address, secureServer.address().port)
++  bootOnload()
++})
++
+ var dns = new (forever.Monitor)(DASHBOARD_DNS, {
+   env: { 'NETBEAST_PORT': process.env.PORT },
+   max: 1
+})
+dns.title = 'netbeast-dns'
+dns.start()
+
+var deamon = new (forever.Monitor)(DASHBOARD_DEAMON, {
+  env: { 'NETBEAST_PORT': process.env.PORT },
+  max: 1
 })
 
-var options = {
-  env: { 'NETBEAST_PORT': process.env.PORT }
-}
+deamon.title = 'netbeast-deamon'
+deamon.start()
 
-spawn(DASHBOARD_NETWORK, options)
-spawn(DASHBOARD_DEAMON, options)
-spawn(DASHBOARD_DNS, options)
-
-process.on('exit', function () {
-  deamon.kill('SIGTERM')
-  dns.kill('SIGTERM')
+var network = new (forever.Monitor)(DASHBOARD_NETWORK, {
+  env: { 'NETBEAST_PORT': process.env.PORT },
+  max: 1
 })
 
-process.on('uncaughtException', function (err) {
-  console.error(err.stack)
-})
+network.title = 'netbeast-network'
+network.start()
