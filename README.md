@@ -1,4 +1,4 @@
-# Netbeast dashboard
+# Netbeast dashboard/ Desktop Version
 
 [![Build Status](https://travis-ci.org/netbeast/dashboard.svg)](https://travis-ci.org/netbeast/dashboard)
 [![npm version](https://badge.fury.io/js/nb-dashboard.svg)](https://badge.fury.io/js/nb-dashboard)
@@ -7,44 +7,63 @@
 
 [![Join the chat at https://gitter.im/netbeast/docs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/netbeast/docs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-###Iot in html5.
+### Run it locally
 
-This is a web panel from you can install, manage or publish IoT applications. For Linux + node.js. You already tried the Netbeast dashboard or distro? Let us know http://bit.ly/1dQmFKt!
+This is the desktop version of the Netbeast dashboard. If you want to run the desktop version locally run:
 
-## Try it locally
-Find it live at `http://localhost`
-![Dashboard live GIF](public/img/dashboard-demo.gif)
-
-### Install
-``` bash
-npm install -g netbeast-cli
 ```
-
-### Run
-```bash
-beast start --port 8000 # default port
-```
-
-## Turn your Raspberry Pi in a home automation gateway!
-
-Compiling with npm the Dashboard node.js native modules may take a while. That is why we precompile them weekly and push them to this repo production branch. You can have it on your Raspberry Pi in less than a minute:
-
-```bash
-git clone -b master --single-branch https://github.com/netbeast/dashboard/
+git clone -b dashboard-electron --single-branch https://github.com/netbeast/dashboard
 cd dashboard
-npm i # by default, dependencies are ignored
-sudo ./index.js
+npm install  #Installing all dependencies
+./node_modules/.bin/electron index.js
 ```
 
-We also prepared a <u>very lightweight Raspberry Pi distro with the dashboard already installed</u> is published every two weeks here http://bit.ly/1HjkWo2. Available for Rpi 1 and 2 versions.
+After that, an Electron window of the Netbeast dashboard will appear. 
 
-## Docs
-You can build IoT apps using only web technologies: javascript and HTML5! Also we hace tutorials at our docs to build apps with python.
-http://docs.netbeast.co
+##Compile the desktop version for MACOS
 
-##Desktop version compilation
+If you want to create the Netbeast dashboard application for mac, follow these steps:
 
-If you want to know how you can compile the Netbeast dashboard to get a desktop application go [here](https://github.com/netbeast/dashboard/tree/dashboard-electron)
+#### 1. Install last Nodejs version (In this example I have v5.7.1) & npm packages
+
+```
+##Install electron-packager
+
+npm install electron-packager -g 
+
+## Install appdmg
+
+npm install appdmg -g 
+
+## Clone the Netbeast dashboard 
+
+git clone -b electron --single-branch https://github.com/netbeast/dashboard
+```
+
+- You can find more information about how these packages work: [electron-packager](https://github.com/electron-userland/electron-packager) [appdmg](https://github.com/LinusU/node-appdmg)
+
+#### 2. Create the Mac App
+
+```
+electron-packager dashboard Netbeast --platform=darwin --arch=all --version=0.36.10 --icon=dashboard/desktop_app/icon.icns --version-string.CompanyName=Netbeast --version-string.ProductName=NetbeastDashboard
+```
+
+-  Check the electron version ```./node_modules/.bin/electron -v```in my case: 36.10
+
+### 3. Create the Mac dmg
+
+Once you have created the Netbeast dashboard app you can run the following command:
+
+
+```
+cd Netbeast-darwin-x64
+appdmg ../dashboard/desktop_app/appdmg.json ~/Desktop/Netbeast.dmg
+```
+
+- Then you will have the Netbeast.dmg file on your desktop :smile:
+
+
+
 
 ## Contact
 * Visit our site [https://netbeast.co](https://netbeast.co)
