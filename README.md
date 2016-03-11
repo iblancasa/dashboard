@@ -12,7 +12,7 @@
 This is the desktop version of the Netbeast dashboard. If you want to run the desktop version locally run:
 
 ```
-git clone -b dashboard-electron --single-branch https://github.com/netbeast/dashboard
+git clone -b electron --single-branch https://github.com/netbeast/dashboard
 cd dashboard
 npm install  #Installing all dependencies
 ./node_modules/.bin/electron index.js
