@@ -15,7 +15,7 @@ This is the desktop version of the Netbeast dashboard. If you want to run the de
 git clone -b electron --single-branch https://github.com/netbeast/dashboard
 cd dashboard
 npm install  #Installing all dependencies
-./node_modules/.bin/electron index.js
+npm start
 ```
 
 After that, an Electron window of the Netbeast dashboard will appear. 
@@ -67,6 +67,21 @@ Coming Soon
 ## Compile the desktop version for Linux
 
 Coming Soon
+
+##Problems
+
+#####Sqlite3 Problem
+
+When you try to run the electron app as ```npm start```you may have a problem with the sqlite3 npm package. You have to rebuild it.
+
+```
+cd node_modules/sqlite3
+npm run prepublish
+node-gyp configure --module_name=node_sqlite3 --module_path=../lib/binding/node-v47-darwin-x64
+node-gyp rebuild --target=0.36.1 --arch=x64 --target_platform=darwin --dist-url=https://atom.io/download/atom-shell --module_name=node_sqlite3 --module_path=../lib/binding/node-v47-darwin-x64
+```
+
+- This is already done when you install all the npm dependencies. You can see it in the package.json file.
 
 ## Contact
 * Visit our site [https://netbeast.co](https://netbeast.co)
