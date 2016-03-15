@@ -16,7 +16,8 @@ export default class Explore extends React.Component {
   componentDidMount () {
     const GITHUB_Q = 'https://api.github.com/search/repositories?q=netbeast+language:javascript'
 
-    request.get(GITHUB_Q).end((err, res) => {
+    request.get(GITHUB_Q)
+    .end((err, res) => {
       if (err) return window.toastr.error(err)
       const items = JSON.parse(res.text).items.filter((app) => {
         return app.name !== 'dashboard' && app.name !== 'api'
@@ -24,16 +25,15 @@ export default class Explore extends React.Component {
       this.setState({ apps: [ ...items ] })
     })
 
-    request.get('/api/apps').end((err, res) => {
+    request.get('/api/modules').end((err, res) => {
       if (err) return window.toastr.error(err)
       this.setState({ installedApps: [ ...res.body ] })
     })
   }
 
   isInstalled (appName) {
-    let apps = [ ...this.state.installedApps ] // smart copy
+    let apps = [...this.state.installedApps] // smart copy
     const index = apps.findIndex((app) => { return app.name === appName })
-    console.log(appName, index)
     return index >= 0
   }
 

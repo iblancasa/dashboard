@@ -2,6 +2,8 @@
 import React from 'react'
 import request from 'superagent-bluebird-promise'
 
+import { API } from '../lib'
+
 export default class ExplorableApp extends React.Component {
   constructor (props, context) {
     super(props)
@@ -24,36 +26,21 @@ export default class ExplorableApp extends React.Component {
   launch () {
     const { name } = this.props
 
-    request.post('/api/activities/' + name).then(() => {
-      return request.get('/i/' + name).promise()
-    }).then(() => {
+    API.launch(name).then(() => {
       this.router.push('/i/' + name)
     }).catch((err) => {
-      if (err.status === 404) return toastr.info(`${name} is running`)
+      if (err.status === 404) {
+        this.setState({ isRunning: true })
+        return toastr.info(`${name} is running`)
+      }
       toastr.error(err.message)
     })
   }
 
-  install () {
-    const url = this.props.git_url
-
-    request.post('/api/apps').send({ url }).then((res) => {
-      const name = res.body.name
-      const props = res.body.netbeast
-      const type = props ? props.type : 'app'
-
-      toastr.success(`${name} has been installed!`)
-
-      if (type === 'plugin' || type === 'service' || props.bootOnLoad)
-        return request.post('/api/activities/' + name).promise()
-    }).then((res) => { toastr.success(`${res.body.name} is running`) })
-    .catch((fail, res) => toastr.error(res.text))
-  }
-
   renderButton () {
-    const { installed, name } = this.props
+    const { installed, name, git_url } = this.props
     return installed ? <a href='javascript:void(0)' onClick={this.launch.bind(this)} className='install btn btn-filled btn-primary'> Launch </a>
-    : <a href='javascript:void(0)' onClick={this.install.bind(this)} className='install btn btn-filled btn-info'> Install </a>
+    : <a href='javascript:void(0)' onClick={API.install.bind(API, git_url)} className='install btn btn-filled btn-info'> Install </a>
   }
 
   render () {

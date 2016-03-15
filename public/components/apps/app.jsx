@@ -5,6 +5,7 @@ import request from 'superagent-bluebird-promise'
 import { OverlayTrigger, Popover } from 'react-bootstrap'
 
 import Pulse from '../misc/activity-pulse.jsx'
+import { API } from '../lib'
 
 export default class App extends React.Component {
   constructor (props, context) {
@@ -30,9 +31,7 @@ export default class App extends React.Component {
   launch () {
     const { name } = this.props
 
-    request.post('/api/activities/' + name).then(() => {
-      return request.get('/i/' + name).promise()
-    }).then(() => {
+    API.launch(name).then(() => {
       this.router.push('/i/' + name)
     }).catch((err) => {
       if (err.status === 404) {
@@ -43,25 +42,9 @@ export default class App extends React.Component {
     })
   }
 
-  install () {
-    const url = this.props.git_url
-
-    request.post('/api/apps').send({ url }).then((res) => {
-      const name = res.body.name
-      const props = res.body.netbeast
-      const type = props ? props.type : 'app'
-
-      toastr.success(`${name} has been installed!`)
-
-      if (type === 'plugin' || type === 'service' || props.bootOnLoad)
-      return request.post('/api/activities/' + name).promise()
-    }).then((res) => { toastr.success(`${res.body.name} is running`) })
-    .catch((fail, res) => toastr.error(res.text))
-  }
-
   stop () {
     const { name, kind, dismiss } = this.props
-    request.del('/api/activities/' + name).end((err, res) => {
+    API.stop(name).then((err, res) => {
       if (err) return
 
       this.setState({ isRunning: false })
@@ -72,7 +55,7 @@ export default class App extends React.Component {
 
   uninstall () {
     const { name, kind, dismiss } = this.props
-    request.del('/api/apps/' + name).end((err, res) => {
+    API.uninstall(name).then((err, res) => {
       if (err) return
       dismiss(name)
       toastr.info(name + ' has been removed.')
@@ -89,26 +72,17 @@ export default class App extends React.Component {
     )
   }
 
-  renderStopButton () {
-    const { kind } = this.props
-    return kind === 'activities'
-    ? <a href='javascript:void(0)' onClick={this.stop.bind(this)} className='stop btn btn-filled btn-warning'> Stop </a>
-    : null
-  }
+  renderButton () {
+    const { kind, git_url } = this.props
 
-  renderRemoveButton () {
-    const { kind } = this.props
-    console.log(kind)
-    return kind === 'remove'
-    ? <a href='javascript:void(0)' onClick={this.uninstall.bind(this)} className='remove btn btn-filled btn-primary'> Remove </a>
-    : null
-  }
-
-  renderInstallButton () {
-    const { kind } = this.props
-    return kind === 'explore'
-    ? <a href='javascript:void(0)' onClick={this.install.bind(this)} className='install btn btn-filled btn-info'> Install </a>
-    : null
+    switch (kind) {
+      case 'activities':
+        return <a href='javascript:void(0)' onClick={this.stop.bind(this)} className='stop btn btn-filled btn-warning'> Stop </a>
+      case 'remove':
+        return <a href='javascript:void(0)' onClick={this.uninstall.bind(this)} className='remove btn btn-filled btn-primary'> Remove </a>
+      case 'explore':
+        return <a href='javascript:void(0)' onClick={API.install.bind(API, git_url)} className='install btn btn-filled btn-info'> Install </a>
+    }
   }
 
   componentDidMount () {
@@ -137,12 +111,12 @@ export default class App extends React.Component {
     return (
       <div className='app'>
       {this.state.isRunning ? <Pulse {...this.props} /> : null}
+
       <OverlayTrigger ref='contextMenu' trigger={[]} rootClose placement='bottom' overlay={this.contextMenu()}>
-      <div className='logo' title='Launch app' style={logoStyle} onClick={this.handleClick.bind(this)} onContextMenu={this.toggleMenu.bind(this)} />
+        <div className='logo' title='Launch app' style={logoStyle} onClick={this.handleClick.bind(this)} onContextMenu={this.toggleMenu.bind(this)} />
       </OverlayTrigger>
-      {this.renderStopButton()}
-      {this.renderRemoveButton()}
-      {this.renderInstallButton()}
+
+      {this.renderButton()}
       <h4 className='name'>{name}</h4>
       </div>
     )

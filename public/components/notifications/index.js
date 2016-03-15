@@ -20,7 +20,7 @@ export default class Notifications extends React.Component {
   }
 
   handleNotification (topic, message) {
-    console.log('mqtt://push ->', message.toString())
+    // console.log('mqtt://push ->', message.toString())
     const notification = JSON.parse(message.toString())
     this.notify(notification)
   }

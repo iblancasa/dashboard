@@ -61267,6 +61267,8 @@ var _activityPulse = require('../misc/activity-pulse.jsx');
 
 var _activityPulse2 = _interopRequireDefault(_activityPulse);
 
+var _lib = require('../lib');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -61312,9 +61314,7 @@ var App = function (_React$Component) {
 
       var name = this.props.name;
 
-      _superagentBluebirdPromise2.default.post('/api/activities/' + name).then(function () {
-        return _superagentBluebirdPromise2.default.get('/i/' + name).promise();
-      }).then(function () {
+      _lib.API.launch(name).then(function () {
         _this2.router.push('/i/' + name);
       }).catch(function (err) {
         if (err.status === 404) {
@@ -61322,25 +61322,6 @@ var App = function (_React$Component) {
           return toastr.info(name + ' is running');
         }
         toastr.error(err.message);
-      });
-    }
-  }, {
-    key: 'install',
-    value: function install() {
-      var url = this.props.git_url;
-
-      _superagentBluebirdPromise2.default.post('/api/apps').send({ url: url }).then(function (res) {
-        var name = res.body.name;
-        var props = res.body.netbeast;
-        var type = props ? props.type : 'app';
-
-        toastr.success(name + ' has been installed!');
-
-        if (type === 'plugin' || type === 'service' || props.bootOnLoad) return _superagentBluebirdPromise2.default.post('/api/activities/' + name).promise();
-      }).then(function (res) {
-        toastr.success(res.body.name + ' is running');
-      }).catch(function (fail, res) {
-        return toastr.error(res.text);
       });
     }
   }, {
@@ -61353,7 +61334,7 @@ var App = function (_React$Component) {
       var kind = _props.kind;
       var dismiss = _props.dismiss;
 
-      _superagentBluebirdPromise2.default.del('/api/activities/' + name).end(function (err, res) {
+      _lib.API.stop(name).then(function (err, res) {
         if (err) return;
 
         _this3.setState({ isRunning: false });
@@ -61369,7 +61350,7 @@ var App = function (_React$Component) {
       var kind = _props2.kind;
       var dismiss = _props2.dismiss;
 
-      _superagentBluebirdPromise2.default.del('/api/apps/' + name).end(function (err, res) {
+      _lib.API.uninstall(name).then(function (err, res) {
         if (err) return;
         dismiss(name);
         toastr.info(name + ' has been removed.');
@@ -61396,38 +61377,32 @@ var App = function (_React$Component) {
       );
     }
   }, {
-    key: 'renderStopButton',
-    value: function renderStopButton() {
-      var kind = this.props.kind;
+    key: 'renderButton',
+    value: function renderButton() {
+      var _props3 = this.props;
+      var kind = _props3.kind;
+      var git_url = _props3.git_url;
 
-      return kind === 'activities' ? _react2.default.createElement(
-        'a',
-        { href: 'javascript:void(0)', onClick: this.stop.bind(this), className: 'stop btn btn-filled btn-warning' },
-        ' Stop '
-      ) : null;
-    }
-  }, {
-    key: 'renderRemoveButton',
-    value: function renderRemoveButton() {
-      var kind = this.props.kind;
-
-      console.log(kind);
-      return kind === 'remove' ? _react2.default.createElement(
-        'a',
-        { href: 'javascript:void(0)', onClick: this.uninstall.bind(this), className: 'remove btn btn-filled btn-primary' },
-        ' Remove '
-      ) : null;
-    }
-  }, {
-    key: 'renderInstallButton',
-    value: function renderInstallButton() {
-      var kind = this.props.kind;
-
-      return kind === 'explore' ? _react2.default.createElement(
-        'a',
-        { href: 'javascript:void(0)', onClick: this.install.bind(this), className: 'install btn btn-filled btn-info' },
-        ' Install '
-      ) : null;
+      switch (kind) {
+        case 'activities':
+          return _react2.default.createElement(
+            'a',
+            { href: 'javascript:void(0)', onClick: this.stop.bind(this), className: 'stop btn btn-filled btn-warning' },
+            ' Stop '
+          );
+        case 'remove':
+          return _react2.default.createElement(
+            'a',
+            { href: 'javascript:void(0)', onClick: this.uninstall.bind(this), className: 'remove btn btn-filled btn-primary' },
+            ' Remove '
+          );
+        case 'explore':
+          return _react2.default.createElement(
+            'a',
+            { href: 'javascript:void(0)', onClick: _lib.API.install.bind(_lib.API, git_url), className: 'install btn btn-filled btn-info' },
+            ' Install '
+          );
+      }
     }
   }, {
     key: 'componentDidMount',
@@ -61454,11 +61429,11 @@ var App = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var _props3 = this.props;
-      var name = _props3.name;
-      var author = _props3.author;
-      var logo = _props3.logo;
-      var netbeast = _props3.netbeast;
+      var _props4 = this.props;
+      var name = _props4.name;
+      var author = _props4.author;
+      var logo = _props4.logo;
+      var netbeast = _props4.netbeast;
 
       var isPlugin = netbeast && netbeast.type === 'plugin';
       var defaultLogo = isPlugin ? 'url(/img/plugin.png)' : 'url(/img/dflt.png)';
@@ -61473,9 +61448,7 @@ var App = function (_React$Component) {
           { ref: 'contextMenu', trigger: [], rootClose: true, placement: 'bottom', overlay: this.contextMenu() },
           _react2.default.createElement('div', { className: 'logo', title: 'Launch app', style: logoStyle, onClick: this.handleClick.bind(this), onContextMenu: this.toggleMenu.bind(this) })
         ),
-        this.renderStopButton(),
-        this.renderRemoveButton(),
-        this.renderInstallButton(),
+        this.renderButton(),
         _react2.default.createElement(
           'h4',
           { className: 'name' },
@@ -61494,7 +61467,7 @@ App.contextTypes = {
   router: _react2.default.PropTypes.object.isRequired
 };
 
-},{"../misc/activity-pulse.jsx":570,"mqtt":36,"react":551,"react-bootstrap":162,"superagent-bluebird-promise":552}],557:[function(require,module,exports){
+},{"../lib":569,"../misc/activity-pulse.jsx":570,"mqtt":36,"react":551,"react-bootstrap":162,"superagent-bluebird-promise":552}],557:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -61508,12 +61481,6 @@ Object.defineProperty(exports, "__esModule", {
 var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
-
-var _superagentBluebirdPromise = require('superagent-bluebird-promise');
-
-var _superagentBluebirdPromise2 = _interopRequireDefault(_superagentBluebirdPromise);
-
-var _reactRouter = require('react-router');
 
 var _app = require('./app.jsx');
 
@@ -61540,44 +61507,29 @@ var AppsList = function (_React$Component) {
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(AppsList).call(this, props, context));
 
     _this.state = { apps: _lib.Session.load('apps') || [] };
-    _this.loadApps = _this.loadApps.bind(_this);
     return _this;
   }
 
   _createClass(AppsList, [{
     key: 'componentWillReceiveProps',
     value: function componentWillReceiveProps(nextProps) {
-      this.loadApps(nextProps);
+      var _this2 = this;
+
+      _lib.API.loadAppsFrom(nextProps.src).then(function (apps) {
+        _this2.setState({ apps: apps });
+      }).catch(function (err) {
+        return toastr.error(err);
+      });
     }
   }, {
     key: 'componentDidMount',
     value: function componentDidMount() {
-      this.loadApps();
-    }
-  }, {
-    key: 'loadApps',
-    value: function loadApps(props) {
-      var _this2 = this;
+      var _this3 = this;
 
-      var _ref = props || this.props;
-
-      var src = _ref.src;
-
-      var kind = src.split('/')[src.split('/').length - 1];
-
-      src = kind !== 'remove' ? src : '/api/modules';
-
-      _superagentBluebirdPromise2.default.get(src).end(function (err, res) {
-        if (err) return toastr.error(err);
-
-        var apps = [].concat(_toConsumableArray(res.body)); // smart copy
-        apps.forEach(function (app) {
-          return app.kind = kind;
-        });
-        console.log('apps', apps);
-
-        _lib.Session.save('apps', apps);
-        _this2.setState({ apps: apps });
+      _lib.API.loadAppsFrom(this.props.src).then(function (apps) {
+        _this3.setState({ apps: apps });
+      }).catch(function (err) {
+        return toastr.error(err);
       });
     }
   }, {
@@ -61594,7 +61546,7 @@ var AppsList = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var _this3 = this;
+      var _this4 = this;
 
       var apps = this.state.apps;
 
@@ -61603,7 +61555,7 @@ var AppsList = function (_React$Component) {
         { className: 'apps-list' },
         this.props.prepend,
         apps.map(function (data) {
-          return _react2.default.createElement(_app2.default, _extends({ key: data.name }, data, { dismiss: _this3.dismiss.bind(_this3) }));
+          return _react2.default.createElement(_app2.default, _extends({ key: data.name }, data, { dismiss: _this4.dismiss.bind(_this4) }));
         }),
         this.props.append,
         _react2.default.createElement('br', null)
@@ -61616,7 +61568,7 @@ var AppsList = function (_React$Component) {
 
 exports.default = AppsList;
 
-},{"../lib":569,"./app.jsx":556,"react":551,"react-router":365,"superagent-bluebird-promise":552}],558:[function(require,module,exports){
+},{"../lib":569,"./app.jsx":556,"react":551}],558:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -61898,6 +61850,8 @@ var _superagentBluebirdPromise = require('superagent-bluebird-promise');
 
 var _superagentBluebirdPromise2 = _interopRequireDefault(_superagentBluebirdPromise);
 
+var _lib = require('../lib');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -61945,32 +61899,14 @@ var ExplorableApp = function (_React$Component) {
 
       var name = this.props.name;
 
-      _superagentBluebirdPromise2.default.post('/api/activities/' + name).then(function () {
-        return _superagentBluebirdPromise2.default.get('/i/' + name).promise();
-      }).then(function () {
+      _lib.API.launch(name).then(function () {
         _this3.router.push('/i/' + name);
       }).catch(function (err) {
-        if (err.status === 404) return toastr.info(name + ' is running');
+        if (err.status === 404) {
+          _this3.setState({ isRunning: true });
+          return toastr.info(name + ' is running');
+        }
         toastr.error(err.message);
-      });
-    }
-  }, {
-    key: 'install',
-    value: function install() {
-      var url = this.props.git_url;
-
-      _superagentBluebirdPromise2.default.post('/api/apps').send({ url: url }).then(function (res) {
-        var name = res.body.name;
-        var props = res.body.netbeast;
-        var type = props ? props.type : 'app';
-
-        toastr.success(name + ' has been installed!');
-
-        if (type === 'plugin' || type === 'service' || props.bootOnLoad) return _superagentBluebirdPromise2.default.post('/api/activities/' + name).promise();
-      }).then(function (res) {
-        toastr.success(res.body.name + ' is running');
-      }).catch(function (fail, res) {
-        return toastr.error(res.text);
       });
     }
   }, {
@@ -61979,6 +61915,7 @@ var ExplorableApp = function (_React$Component) {
       var _props = this.props;
       var installed = _props.installed;
       var name = _props.name;
+      var git_url = _props.git_url;
 
       return installed ? _react2.default.createElement(
         'a',
@@ -61986,7 +61923,7 @@ var ExplorableApp = function (_React$Component) {
         ' Launch '
       ) : _react2.default.createElement(
         'a',
-        { href: 'javascript:void(0)', onClick: this.install.bind(this), className: 'install btn btn-filled btn-info' },
+        { href: 'javascript:void(0)', onClick: _lib.API.install.bind(_lib.API, git_url), className: 'install btn btn-filled btn-info' },
         ' Install '
       );
     }
@@ -62029,7 +61966,7 @@ ExplorableApp.contextTypes = {
   router: _react2.default.PropTypes.object.isRequired
 };
 
-},{"react":551,"superagent-bluebird-promise":552}],560:[function(require,module,exports){
+},{"../lib":569,"react":551,"superagent-bluebird-promise":552}],560:[function(require,module,exports){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -62100,7 +62037,7 @@ var Explore = function (_React$Component) {
         _this2.setState({ apps: [].concat(_toConsumableArray(items)) });
       });
 
-      _superagentBluebirdPromise2.default.get('/api/apps').end(function (err, res) {
+      _superagentBluebirdPromise2.default.get('/api/modules').end(function (err, res) {
         if (err) return window.toastr.error(err);
         _this2.setState({ installedApps: [].concat(_toConsumableArray(res.body)) });
       });
@@ -62112,7 +62049,6 @@ var Explore = function (_React$Component) {
       var index = apps.findIndex(function (app) {
         return app.name === appName;
       });
-      console.log(appName, index);
       return index >= 0;
     }
   }, {
@@ -63048,15 +62984,26 @@ _reactDom2.default.render(_react2.default.createElement(
 },{"./apps/drawer.jsx":558,"./apps/explore.jsx":560,"./apps/install.jsx":561,"./apps/live.jsx":562,"./dashboard.jsx":563,"./devices/index.jsx":567,"./not-found.jsx":573,"./settings.jsx":576,"react":551,"react-dom":335,"react-router":365}],569:[function(require,module,exports){
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /* global localStorage, toastr */
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.API = exports.Session = undefined;
+
+var _superagentBluebirdPromise = require('superagent-bluebird-promise');
+
+var _superagentBluebirdPromise2 = _interopRequireDefault(_superagentBluebirdPromise);
+
+var _bluebird = require('bluebird');
+
+var _bluebird2 = _interopRequireDefault(_bluebird);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/* global localStorage */
 
 var Session = exports.Session = function () {
   function Session() {
@@ -63085,9 +63032,60 @@ var API = exports.API = function () {
   }
 
   _createClass(API, null, [{
+    key: 'loadAppsFrom',
+    value: function loadAppsFrom(src) {
+      var kind = src.split('/')[src.split('/').length - 1];
+
+      src = kind !== 'remove' ? src : '/api/modules';
+
+      return _superagentBluebirdPromise2.default.get(src).then(function (res) {
+        var apps = [].concat(_toConsumableArray(res.body)); // smart copy
+        apps.forEach(function (app) {
+          return app.kind = kind;
+        });
+
+        Session.save('apps', apps);
+        return _bluebird2.default.resolve(apps);
+      });
+    }
+  }, {
+    key: 'launch',
+    value: function launch(name) {
+      return _superagentBluebirdPromise2.default.post('/api/activities/' + name).then(function () {
+        return _superagentBluebirdPromise2.default.get('/i/' + name).promise();
+      });
+    }
+  }, {
+    key: 'stop',
+    value: function stop(name) {
+      return _superagentBluebirdPromise2.default.del('/api/activities/' + name).promise();
+    }
+  }, {
     key: 'install',
-    value: function install(app) {
-      return app;
+    value: function install(url) {
+      var _this = this;
+
+      return _superagentBluebirdPromise2.default.post('/api/apps').send({ url: url }).then(function (res) {
+        var name = res.body.name;
+        var props = res.body.netbeast;
+        var type = props ? props.type : 'app';
+
+        toastr.success(name + ' has been installed!');
+
+        if (type === 'plugin' || type === 'service' || props && props.bootOnLoad) {
+          return _this.launch(name);
+        }
+      }).then(function (res) {
+        toastr.success(res.body.name + ' is running');
+        return _bluebird2.default.resolve(res);
+      }).catch(function (fail, res) {
+        return toastr.error(fail.message);
+      });
+    }
+  }, {
+    key: 'uninstall',
+    value: function uninstall(name) {
+      return _superagentBluebirdPromise2.default.del('/api/apps/' + name).promise();
     }
   }]);
 
@@ -63096,7 +63094,7 @@ var API = exports.API = function () {
 
 exports.default = { Session: Session, API: API };
 
-},{}],570:[function(require,module,exports){
+},{"bluebird":1,"superagent-bluebird-promise":552}],570:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -63393,7 +63391,7 @@ var Notifications = function (_React$Component) {
   }, {
     key: 'handleNotification',
     value: function handleNotification(topic, message) {
-      console.log('mqtt://push ->', message.toString());
+      // console.log('mqtt://push ->', message.toString())
       var notification = JSON.parse(message.toString());
       this.notify(notification);
     }
@@ -63510,7 +63508,7 @@ var Toast = function (_React$Component) {
       var timeout = _props.timeout;
       var isCurrent = _props.isCurrent; // eslint-disable-line
 
-      // if (timeout) setTimeout(this.close, timeout)
+      if (timeout) setTimeout(this.close, timeout);
 
       return _react2.default.createElement(
         'div',
