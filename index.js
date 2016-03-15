@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-'use strict'
-
 require('./lib/init')
 
 // Node native libraries
@@ -36,32 +34,8 @@ process.env.PORT = cmd.port || process.env.PORT
 
 server.listen(process.env.PORT, function () {
   console.log('👾  Netbeast dashboard started on %s:%s', server.address().address, server.address().port)
-
-  const electron = require('electron')
-  const app = electron.app
-  const BrowserWindow = electron.BrowserWindow
-  
-  let mainWindow;
-
-  function createWindow () {
-    mainWindow = new BrowserWindow({width: 1000, height: 800, title: 'Netbeast Dashboard'})
-    mainWindow.loadURL('http://localhost:8000')
-    mainWindow.on('closed', function() {
-      mainWindow = null;
-    })
-  }
-  app.on('ready', createWindow)
-  app.on('window-all-closed', function () {
-    if (process.platform !== 'darwin') {
-     app.quit()
-    }
-  })
-  app.on('activate', function () {
-    if (mainWindow === null) {
-      createWindow();
-    }
-  })
   bootOnload()
+  setTimeout(function(){ process.send('ready') }, 2000);
 })
 
 var env = Object.create(process.env)
@@ -72,13 +46,13 @@ var network = spawn(DASHBOARD_NETWORK, options)
 var deamon = spawn(DASHBOARD_DEAMON, options)
 var dns = spawn(DASHBOARD_DNS, options)
 
-network.stdout.on('data', (data) => {
+network.stdout.on('data', function(data) {
   console.log(data.toString())
 })
-deamon.stdout.on('data', (data) => {
+deamon.stdout.on('data', function(data) {
   console.log(data.toString())
 })
-dns.stdout.on('data', (data) => {
+dns.stdout.on('data', function(data) {
   console.log(data.toString())
 })
 
