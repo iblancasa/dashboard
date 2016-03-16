@@ -35,7 +35,7 @@ process.env.PORT = cmd.port || process.env.PORT
 server.listen(process.env.PORT, function () {
   console.log('👾  Netbeast dashboard started on %s:%s', server.address().address, server.address().port)
   bootOnload()
-  setTimeout(function(){ process.send('ready') }, 2000);
+  process.send('ready')
 })
 
 var env = Object.create(process.env)
