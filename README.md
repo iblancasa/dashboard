@@ -7,7 +7,14 @@
 
 [![Join the chat at https://gitter.im/netbeast/docs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/netbeast/docs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-### Run it locally
+## Current Status :rocket:
+
+Currently, we are developing the MacApp. Feel free to contribute and build the application for Linux and Windows :smile:
+
+Dashboard code will be updated continually. Take that into account to update your applications until auto-updating system is implemented (you can also collaborate with it) 
+
+
+## Run it locally
 
 This is the desktop version of the Netbeast dashboard. If you want to run the desktop version locally run:
 
@@ -51,10 +58,10 @@ npm install
 ##### 2. Create the Mac App
 
 ```
-electron-packager dashboard Netbeast --platform=darwin --arch=all --version=0.36.10 --icon=dashboard/desktop_app/icon.icns --version-string.CompanyName=Netbeast --version-string.ProductName=NetbeastDashboard
+electron-packager dashboard Netbeast --platform=darwin --arch=x64 --version=0.37.2 --icon=dashboard/desktop_app/icon.icns --version-string.CompanyName=Netbeast --version-string.ProductName=NetbeastDashboard
 ```
 
--  Check the electron version ```./node_modules/.bin/electron -v```in my case: 36.10
+-  Check the electron version ```./node_modules/.bin/electron -v```in my case: 0.37.2
 
 ##### 3. Create the Mac dmg
 
